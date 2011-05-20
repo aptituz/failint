@@ -31,18 +31,18 @@ sub debug {
 sub info {
     my ($file, $lineno, $message) = @_;
     if ($options->{info}) {
-        print "I: $file:$lineno:" . $message . "\n";
+        print "I: $file:$lineno " . $message . "\n";
     }
 }
 
 sub warning {
     my ($file, $lineno, $message) = @_;
-    print "W: $file:$lineno:" . $message . "\n";
+    print "W: $file:$lineno " . $message . "\n";
 }
 
 sub error {
     my ($file, $lineno, $message) = @_;
-    print "E: $file:$lineno:" . $message . "\n";
+    print "E: $file:$lineno " . $message . "\n";
 }
 
 1;

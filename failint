@@ -60,7 +60,7 @@ sub run_checks {
         }
     }
     print "Found $errors error(s), $warnings warning(s) and $infos info(s)\n";
-    print "Informations are not shown in the output above." if not $info;
+    print "Infos has been suppressed." if not $info and $infos;
 }
 
 run_checks;
