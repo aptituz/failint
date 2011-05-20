@@ -1,0 +1,32 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use Getopt::Long;
+use File::Basename qw(basename);
+
+use Failint::Log;
+
+# License: GNU GPL version 2 or greater
+# Copyright: 2011 Patrick Schoenfeld <patrick.schoenfeld@googlemail.com>
+
+my $debug = 0;
+my $info = 0;
+my $progname = basename($0);
+my $default_checkdir = "/usr/share/failint/checks";
+my $checkdir = (-d $default_checkdir) ? $default_checkdir : "checks/";
+
+GetOptions (
+    "debug" => \$debug,
+    "info" => \$info
+);
+
+Failint::Log::Configure(debug => $debug);
+Failint::Log::Configure(info => $info);
+my $config_path = shift @ARGV || "/srv/fai/config";
+
+sub run_checks {
+    print $checkdir . "\n";
+}
+
