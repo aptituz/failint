@@ -27,6 +27,41 @@ Failint::Log::Configure(info => $info);
 my $config_path = shift @ARGV || "/srv/fai/config";
 
 sub run_checks {
-    print $checkdir . "\n";
+    my ($warnings, $errors, $infos) = 0;
+
+    for my $check (sort(glob($checkdir . "*"))) {
+        next if (not -x $check);
+        debug("Running $check\n");
+        open(my $check_fh, "-|", $check, $config_path) or
+            die "unable to fork subprocess: $!";
+
+        while (my $line = <$check_fh>) {
+            chomp $line;
+            debug("Output: " . $line);
+            if ($line =~ /^W\|(.*)\|(.*)\|(.*)/) {
+               my (undef, $file, $lineno, $text) = split(/\|/, $line);
+               warning($file, $lineno, $text);
+               $warnings++;
+            } elsif ($line =~ /^E\|(.*)\|(.*)\|(.*)/) {
+                my (undef, $file, $lineno, $text) = split(/\|/, $line);
+                error($file, $lineno, $text);
+                $errors++;
+            } elsif ($line =~ /^I\|(.*)\|(.*)\|(.*)/) {
+                my (undef, $file, $lineno, $text) = split(/\|/, $line);
+                info($file, $lineno, $text);
+                $infos++;
+            } elsif ($line =~ /^D\|(.*)/) {
+                my (undef, $message) =  split(/\|/, $line);
+                debug($message);
+            } else {
+                # Ignore other output
+                next;
+            }
+        }
+    }
+    print "Found $errors error(s), $warnings warning(s) and $infos info(s)\n";
+    print "Informations are not shown in the output above." if not $info;
 }
+
+run_checks;
 

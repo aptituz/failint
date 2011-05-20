@@ -24,25 +24,25 @@ sub Configure {
 sub debug {
     my $message = shift;
     if ($options->{debug}) {
-        print STDERR "DEBUG: " . $message;
+        print STDERR "DEBUG: " . $message . "\n";
     }
 }
 
 sub info {
-    my $message = shift;
+    my ($file, $lineno, $message) = @_;
     if ($options->{info}) {
-        print "I: " . $message;
+        print "I: $file:$lineno:" . $message . "\n";
     }
 }
 
 sub warning {
-    my $message = shift;
-    print "W: " . $message;
+    my ($file, $lineno, $message) = @_;
+    print "W: $file:$lineno:" . $message . "\n";
 }
 
 sub error {
-    my $message = shift;
-    print "E: " . $message;
+    my ($file, $lineno, $message) = @_;
+    print "E: $file:$lineno:" . $message . "\n";
 }
 
 1;
