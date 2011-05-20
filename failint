@@ -27,7 +27,7 @@ Failint::Log::Configure(info => $info);
 my $config_path = shift @ARGV || "/srv/fai/config";
 
 sub run_checks {
-    my ($warnings, $errors, $infos) = 0;
+    my ($warnings, $errors, $infos) = (0, 0, 0);
 
     for my $check (sort(glob($checkdir . "*"))) {
         next if (not -x $check);
