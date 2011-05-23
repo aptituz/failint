@@ -1,6 +1,8 @@
 package Failint::Checks::Helpers;
 
 use Failint::Checks::Log;
+use File::Temp qw(tempfile);
+use File::Slurp;
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -41,21 +43,33 @@ sub check_script_for_syntax_errors {
     # but skip some interpreters because -n is buggy..
     return if $interpreter =~ /^(z|t?c)sh$/;
 
+    my ($fh, $tmpfile) = tempfile( 'XXXXXXX', CLEANUP => 1);
     if ($interpreter =~ /sh/) {
         if (-x $interpreter) {
-           system($interpreter, "-n", $fname);
+           system("$interpreter -n  $fname 1>$tmpfile 2>&1");
            my $rc = $? >> 8;
-           warning($fname,"", "shell script has syntax errors")
-            unless $rc == 0;
+           unless ($rc == 0) {
+               warning($fname,"", "shell script has syntax errors");
+               my $stderr = read_file($tmpfile);
+               verbose("errors in $fname:");
+               verbose($stderr);
+           }
         }
     } elsif ($interpreter =~ /perl/) {
         if (-x $interpreter) {
-            system($interpreter, "-c", $fname, ">/dev/null");
+            system("$interpreter -c $fname 1>$tmpfile 2>&1");
             my $rc = $? >> 8;
-            warning($fname, "", "perl script has compilation errors")
-                unless $rc == 0;
+            my $stderr = read_file($tmpfile);
+
+            unless ($rc == 0) {
+                warning($fname, "", "perl script has compilation errors");
+                my $stderr = read_file($tmpfile);
+                verbose("errors in $fname:");
+                verbose($stderr);
+            }
         }
     }
+    unlink($tmpfile);
 }
 
 1;
