@@ -17,8 +17,13 @@ our $options = {
 
 sub Configure {
     my ($key, $value) = @_;
-    print "Setting $key to $value\n";
     $options->{$key} = $value;
+}
+
+sub print_message {
+    my $message = shift;
+    $message =~ s/\s:\s/ /g;
+    print $message . "\n";
 }
 
 sub debug {
@@ -31,18 +36,18 @@ sub debug {
 sub info {
     my ($file, $lineno, $message) = @_;
     if ($options->{info}) {
-        print "I: $file:$lineno " . $message . "\n";
+        print_message($message);
     }
 }
 
 sub warning {
     my ($file, $lineno, $message) = @_;
-    print "W: $file:$lineno " . $message . "\n";
+    print_message("W: $file:$lineno " . $message);
 }
 
 sub error {
     my ($file, $lineno, $message) = @_;
-    print "E: $file:$lineno " . $message . "\n";
+    print_message("E: $file:$lineno " . $message);
 }
 
 1;
