@@ -4,69 +4,32 @@ use Data::Dumper;
 use File::Basename qw(dirname basename);
 use File::Find;
 
-my $fai_dir = shift @ARGV;
-my $script_dir = $fai_dir . "/scripts";
-use lib dirname($0);
-use functions;
 
-find( sub  {
-        my $fname = $File::Find::name;
-        next if not (-f $fname);
-        debug("Testing $fname");
+use Failint::Checks::Log;
+use Failint::Checks::Vars;
+use Failint::Checks::Helpers;
 
-        if (! -x $fname) {
-            warning($fname, "", "script is not executable");
-        }
+debug("FAI DIR: $fai_dir\n");
 
-        open(my $fh, "<", $fname) or
-            die "unable to open file $fname: $1";
+sub check_script {
+    my $fname = $File::Find::name;
+    next if not (-f $fname);
+    debug("Testing $fname");
 
-        my $first_line = <$fh>;
-        if (not $first_line =~ /^#!(.*)/) {
-            warning($fname, 1, "script does not start with a she-bang");
-        } else {
-            $interpreter = $1;
-            $interpreter =~ s/^\s+|\s+$//g;
-            debug(basename($fname) ." has Interpreter: $interpreter");
+    if (! -x $fname) {
+        warning($fname, "", "script is not executable");
+    }
 
-            # Test syntax of script for known interpreters
-            if ($interpreter =~ /sh/) {
-                if (-x $interpreter) {
-                   system($interpreter, "-n", $fname);
-                   my $rc = $? >> 8;
-                   warning($fname,"", "shell script has syntax errors")
-                    unless $rc == 0;
-                }
-            } elsif ($interpreter =~ /perl/) {
-                if (-x $interpreter) {
-                    system($interpreter, "-c", $fname, ">/dev/null");
-                    my $rc = $? >> 8;
-                    warning($fname, "", "perl script has compilation errors")
-                        unless $rc == 0;
-                }
-            }
+    open(my $fh, "<", $fname) or
+        die "unable to open file $fname: $1";
 
-        }
+    $interpreter = get_interpreter($fh);
+    if (not $interpreter) {
+        warning($fname, 1, "script does not start with a she-bang");
+    } else {
+        debug(basename($fname) ." has Interpreter: $interpreter");
+        check_script_for_syntax_errors($fname);
+    }
+}
 
-
-    }, $script_dir);
-
-#SCRIPTS_DIR="$1/scripts"
-#
-#
-#. `dirname $0`/functions.sh
-#
-#for file (`find $SCRIPTS_DIR -type f`=; do
-#    debug "Testing $file";
-#    if [ ! -x $file ]; then
-#        warn $file "" "Script is not executable"
-#    fi
-#
-#    SHEBANG="$(head -1 $file)"
-#    debug "`echo $SHEBANG|sed s/^#\!\(.*\)/true/`"
-#    if [ "`echo $SHEBANG|sed s/#!\(.*\)/true/`" = 'true' ]; then
-#       debug "Script has a SHEBANG"
-#   fi 
-#
-#done
-#
+find(  \&check_script, $scripts_dir);

@@ -1,0 +1,24 @@
+#!/bin/sh
+
+FAI_DIR="$1"
+CLASS_DIR="$FAI_DIR/class"
+DISKCONFIG_DIR="$FAI_DIR/disk_config"
+PACKAGECONFIG_DIR="$FAI_DIR/package_config"
+
+. $(dirname $0)/functions.sh
+
+if [ ! -d $CLASS_DIR ]; then
+    error "" "" "no 'class' subdir in fai config space"
+elif [ -z "`find $CLASS_DIR -type f`" ]; then
+    error "" "" "class directory does not contain files"
+fi
+
+if [ ! -d $DISKCONFIG_DIR ]; then
+    error "" "" "no 'disk_config' subdir in fai config space"
+elif [ -z "`find $DISKCONFIG_DIR -type f`" ]; then
+    error "" "" "disk_config directory does not contain files"
+fi
+
+if [ ! -d $PACKAGECONFIG_DIR ]; then
+    error "" "" "no 'package_config' subdir in fai config space"
+fi
