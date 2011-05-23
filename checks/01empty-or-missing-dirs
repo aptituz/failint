@@ -1,24 +1,53 @@
-#!/bin/sh
+#!/usr/bin/perl
 
-FAI_DIR="$1"
-CLASS_DIR="$FAI_DIR/class"
-DISKCONFIG_DIR="$FAI_DIR/disk_config"
-PACKAGECONFIG_DIR="$FAI_DIR/package_config"
+use Failint::Checks::Log;
+use Failint::Checks::Vars;
 
-. $(dirname $0)/functions.sh
+if (not -d $class_dir)  {
+    error("", "","no 'class' subdir in fai config space");
+} elsif ( not glob($class_dir . "/*")) {
+    error("", "", "class directory does not contain any files");
+}
 
-if [ ! -d $CLASS_DIR ]; then
-    error "" "" "no 'class' subdir in fai config space"
-elif [ -z "`find $CLASS_DIR -type f`" ]; then
-    error "" "" "class directory does not contain files"
-fi
+if (not -d $package_config_dir)  {
+    error("", "","no 'package_config' subdir in fai config space");
+} elsif ( not glob($package_config_dir . "/*")) {
+    error("", "", "package_config directory does not contain any files");
+}
 
-if [ ! -d $DISKCONFIG_DIR ]; then
-    error "" "" "no 'disk_config' subdir in fai config space"
-elif [ -z "`find $DISKCONFIG_DIR -type f`" ]; then
-    error "" "" "disk_config directory does not contain files"
-fi
+if (not -d $debconf_dir)  {
+    error("", "","no 'debconf' subdir in fai config space");
+} elsif ( not glob($debconf_dir . "/*")) {
+    warning("", "", "debconf directory does not contain any files");
+}
 
-if [ ! -d $PACKAGECONFIG_DIR ]; then
-    error "" "" "no 'package_config' subdir in fai config space"
-fi
+if (not -d $disk_config_dir)  {
+    error("", "","no 'disk_config' subdir in fai config space");
+} elsif ( not glob($disk_config_dir . "/*")) {
+    error("", "", "disk_config directory does not contain any files");
+}
+
+if (not -d $debconf_dir)  {
+    error("", "","no 'debconf' subdir in fai config space");
+} elsif ( not glob($debconf_dir . "/*")) {
+    warning("", "", "debconf directory does not contain any files");
+}
+
+if (not -d $files_dir)  {
+    error("", "","no 'files' subdir in fai config space");
+} elsif ( not glob($files_dir . "/*")) {
+    warning("", "", "files directory does not contain any files");
+}
+
+if (not -d $hooks_dir)  {
+    error("", "","no 'hooks' subdir in fai config space");
+} elsif ( not glob($hooks_dir . "/*")) {
+    warning("", "", "hooks directory does not contain any hooks");
+}
+
+if (not -d $scripts_dir)  {
+    error("", "","no 'scripts' subdir in fai config space");
+} elsif ( not glob($scripts_dir . "/*")) {
+    warning("", "", "scripts directory does not contain any hooks");
+}
+
