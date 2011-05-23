@@ -13,13 +13,15 @@ use Failint::Log;
 
 my $debug = 0;
 my $info = 0;
+my $verbose = 0;
 my $progname = basename($0);
 my $default_checkdir = "/usr/share/failint/checks";
 my $checkdir = (-d $default_checkdir) ? $default_checkdir : "checks/";
 
 GetOptions (
     "debug" => \$debug,
-    "info" => \$info
+    "info" => \$info,
+    "verbose|v" => \$verbose
 );
 
 Failint::Log::Configure(debug => $debug);
@@ -55,7 +57,8 @@ sub run_checks {
                 debug($message);
             } else {
                 # Ignore other output
-                next;
+                next if not $verbose;
+                print $line;
             }
         }
     }
