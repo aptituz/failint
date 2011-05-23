@@ -23,7 +23,7 @@ sub check_script {
     open(my $fh, "<", $fname) or
         die "unable to open file $fname: $1";
 
-    $interpreter = get_interpreter($fh);
+    $interpreter = get_interpreter($fname);
     if (not $interpreter) {
         warning($fname, 1, "script does not start with a she-bang");
     } else {

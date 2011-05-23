@@ -7,21 +7,15 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( gte_fh get_interpreter check_script_for_syntax_errors );
 
-sub get_fh {
+sub open_file {
     my $f = shift;
-
     my $fh;
-    if (not openhandle($fh)) {
-        open($fh, "<", $f) or die "unable to open: $!";
-    } else {
-        $fh = $f;
-    }
+    open($fh, "<", $f) or die "unable to open $f: $!";
     return $fh;
 }     
 
 sub get_interpreter {
-    my $fh = get_fh(shift);
-    sysseek($fh, 0, SEEK_SET);
+    my $fh = open_file(shift);
     my $first_line = <$fh>;
     if (not $first_line =~ /^#!(.*)/) {
         return undef;
