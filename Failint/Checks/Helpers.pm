@@ -1,11 +1,11 @@
 package Failint::Checks::Helpers;
 
 use Failint::Checks::Log;
-use Scalar::Util qw(openhandle);
 
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT = qw( gte_fh get_interpreter check_script_for_syntax_errors );
+our @EXPORT = qw( gte_fh get_interpreter check_script_for_syntax_errors
+check_script_is_executable);
 
 sub open_file {
     my $f = shift;
@@ -29,7 +29,7 @@ sub get_interpreter {
 sub check_script_is_executable {
     my ($name, $fname) = @_;
     if (not -x $fname) {
-        warning $fname "" "$name is not executable"
+        warning($fname, "", "$name is not executable");
     }
 }
 
