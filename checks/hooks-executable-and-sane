@@ -11,10 +11,41 @@ use Failint::Checks::Helpers;
 
 debug("FAI DIR: $fai_dir\n");
 
+our $tasks = {
+    'confdir' => 1,
+    'setup' => 1,
+    'defclass' => 1,
+    'defvar' => 1,
+    'action' => 1,
+    'sysinfo' => 1,
+    'install' => 1,
+    'softupdate' => 1,
+    'partition' => 1,
+    'mountdisks' => 1,
+    'extrbase' => 1,
+    'mirror' => 1,
+    'debconf' => 1,
+    'prepareapt' => 1,
+    'updatebase' => 1,
+    'instsoft' => 1,
+    'configure' => 1,
+    'tests' => 1,
+    'finish' => 1,
+    'chboot' => 1,
+    'savelog' => 1,
+    'faiend' => 1
+};
+
 sub check_script {
     my $fname = $File::Find::name;
     next if not (-f $fname);
     debug("Testing $fname");
+
+    my ($task, $class) = split(/\./, basename($fname), 2);
+    if (not $tasks->{$task}) {
+        warning($fname, "", "non-existing task '$task'");
+        return;
+    }
 
     if (! -x $fname) {
         warning($fname, "", "hook is not executable");
@@ -28,6 +59,9 @@ sub check_script {
         debug(basename($fname) ." has Interpreter: $interpreter");
         check_script_for_syntax_errors($fname);
     }
+
+  
+
 }
 
 find(  \&check_script, $hooks_dir);
