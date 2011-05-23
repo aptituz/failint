@@ -26,11 +26,21 @@ sub get_interpreter {
     }
 }
 
+sub check_script_is_executable {
+    my ($name, $fname) = @_;
+    if (not -x $fname) {
+        warning $fname "" "$name is not executable"
+    }
+}
+
 sub check_script_for_syntax_errors {
     my $fname = shift;
     my $interpreter = get_interpreter($fname);
 
     # Test syntax of script for known interpreters
+    # but skip some interpreters because -n is buggy..
+    return if $interpreter =~ /^(z|t?c)sh$/;
+
     if ($interpreter =~ /sh/) {
         if (-x $interpreter) {
            system($interpreter, "-n", $fname);

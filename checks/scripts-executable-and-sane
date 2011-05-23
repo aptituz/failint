@@ -16,12 +16,7 @@ sub check_script {
     next if not (-f $fname);
     debug("Testing $fname");
 
-    if (! -x $fname) {
-        warning($fname, "", "script is not executable");
-    }
-
-    open(my $fh, "<", $fname) or
-        die "unable to open file $fname: $1";
+    check_script_is_executable('script', $fname);
 
     $interpreter = get_interpreter($fname);
     if (not $interpreter) {
