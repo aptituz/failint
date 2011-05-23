@@ -17,7 +17,8 @@ sub check_script {
     debug("Testing $fname");
 
     if (! -x $fname) {
-        warning($fname, "", "hooks is not executable");
+        warning($fname, "", "hook is not executable");
+        print "FAI will only run hooks which have the executable bit set";
     }
 
     $interpreter = get_interpreter($fname);
