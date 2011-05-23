@@ -25,8 +25,8 @@ sub error {
 }
 
 sub verbose {
-    my $line = @_;
-    print $line . "\n";
+    my ($message) = @_;
+    print $message . "\n";
 }
 
 1;
