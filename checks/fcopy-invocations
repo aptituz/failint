@@ -1,0 +1,121 @@
+#!/usr/bin/perl
+
+use Data::Dumper;
+use File::Basename qw(dirname basename);
+use File::Find;
+use Getopt::Std;
+
+
+use Failint::Checks::Log;
+use Failint::Checks::Vars;
+use Failint::Checks::Helpers;
+use Failint::Checks::Shell;
+
+debug("FAI DIR: $fai_dir\n");
+
+sub check_target_file {
+    my ($fname, $lineno, $target, $no_fail, $recursive, $perms)  = @_;
+    
+    # Detect class of file
+    my $class = $fname;
+    my $fname_short = basename($fname);
+    $class =~ s/\Q$scripts_dir\E//;
+    $class =~ s/\Q$fname_short\E//;
+    $class =~ s/\///g;
+    
+    if ($target !~ /^\//) {
+        $target = "/" . $target;
+    }
+
+    my $expected_path = $files_dir . $target;
+    if (not -d $expected_path) {
+        if (not $no_fail) {
+            error($fname, $lineno,
+                "non-existing source-path, expected $expected_path ");
+        } else {
+            info($fname, $lineno,
+                "non-existing source path, expected $expected_path");
+        }
+    } elsif (not -f $expected_path . "/$class") {
+        if (not $no_fail) {
+            warning($fname, $lineno, "fcopy: $expected_path does not contain a file for this class $class");
+        } else {
+            info($fname, $lineno, "fcopy: $expected_path does not contain a file for this class $class");
+        }
+    }
+
+    if ($target =~ /[\$]/) {
+        info ($fname, $lineno, "fcopy target ($target) contains a variable");
+    }
+
+}
+sub check_script {
+    my $fname = $File::Find::name;
+    next if not (-f $fname);
+    debug("Testing $fname");
+
+    check_script_is_executable('script', $fname);
+
+    $interpreter = get_interpreter($fname);
+    if (not $interpreter) {
+        debug "Ignoring $fname for fcopy tests, because it has no interpreter";
+    } else {
+        if (not $interpreter =~ /sh/) {
+            debug "Ignoring $fname because we don't know how to parse it";
+        }
+
+        my $fh;
+        open($fh, "<", $fname) or die "unable to open $fname: $!";
+        my $line=0;
+        while(<$fh>) {
+            $line++;
+            if (/$FCOPY_CMD/) {
+                debug("fcopy command found in $fname: $1");
+
+                
+                my $fcopy_args = $1;
+                my $no_fail = 0;
+                # if command line contains || a fcopy failure is probably
+                # meant to be non-fatal
+                if ($_ =~ /\|\|/) {
+                    $no_fail=1;
+                }
+
+                {
+                    my %opts;
+                    $_ = $fcopy_args;
+                    local @ARGV = split;
+                    getopts('BDiMm:rUv', \%opts);
+                    my @fcopy_files = @ARGV;
+    
+                    my $perms;
+                    if ($opts{M}) {
+                        $perms = "root,root,0644"
+                    } elsif ($opts{m}) {
+                        $perms = $opts{m};
+                    }
+                    
+                    if ($opts{m} and $opts{M}) {
+                        warning($fname, $line,
+                            "fcopy called with both -m and -M arguments");
+                    }
+                    if ($opts{i}) {
+                        info($fname, $line,
+                            "fcopy called with -i, failure expected?")
+                    }
+
+                    my $recursive = $opts{r} ? 1 : 0;
+                    if ($opts{i} and not $no_fail) {
+                        $no_fail = 1;
+                    }
+
+                    for $target (@fcopy_files) {
+                        check_target_file($fname, $line, $target, $no_fail,
+                            $recursive, $perms);
+                    }
+                }
+            }
+        }
+    }
+}
+find(  \&check_script, $scripts_dir);
