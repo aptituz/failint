@@ -18,7 +18,7 @@ sub check_script {
 
     if (! -x $fname) {
         warning($fname, "", "hook is not executable");
-        print "FAI will only run hooks which have the executable bit set";
+        verbose "FAI will only run hooks which have the executable bit set";
     }
 
     $interpreter = get_interpreter($fname);

@@ -35,4 +35,9 @@ sub error {
     print "E|$file|$lineno|$message\n"
 }
 
+sub verbose {
+    my $line = @_;
+    print $line . "\n";
+}
+
 1;
