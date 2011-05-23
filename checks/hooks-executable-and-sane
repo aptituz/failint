@@ -1,0 +1,32 @@
+#!/usr/bin/perl
+
+use Data::Dumper;
+use File::Basename qw(dirname basename);
+use File::Find;
+
+
+use Failint::Checks::Log;
+use Failint::Checks::Vars;
+use Failint::Checks::Helpers;
+
+debug("FAI DIR: $fai_dir\n");
+
+sub check_script {
+    my $fname = $File::Find::name;
+    next if not (-f $fname);
+    debug("Testing $fname");
+
+    if (! -x $fname) {
+        warning($fname, "", "hooks is not executable");
+    }
+
+    $interpreter = get_interpreter($fname);
+    if (not $interpreter) {
+        warning($fname, 1, "script does not start with a she-bang");
+    } else {
+        debug(basename($fname) ." has Interpreter: $interpreter");
+        check_script_for_syntax_errors($fname);
+    }
+}
+
+find(  \&check_script, $hooks_dir);
