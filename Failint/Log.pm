@@ -36,7 +36,7 @@ sub debug {
 sub info {
     my ($file, $lineno, $message) = @_;
     if ($options->{info}) {
-        print_message($message);
+        print_message("I: $file:$lineno " . $message);
     }
 }
 
