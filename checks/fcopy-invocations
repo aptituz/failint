@@ -94,7 +94,12 @@ sub check_script {
                     } elsif ($opts{m}) {
                         $perms = $opts{m};
                     }
-                    
+                   
+                    if (not @fcopy_files) {
+                        error($fname, "",
+                            "fcopy called without target file arguments");
+                    }
+
                     if ($opts{m} and $opts{M}) {
                         warning($fname, $line,
                             "fcopy called with both -m and -M arguments");
