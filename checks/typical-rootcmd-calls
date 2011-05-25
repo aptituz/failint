@@ -1,0 +1,48 @@
+#!/usr/bin/perl
+# Checks some typical commands, which are usually called with a $ROOTCMD prefix
+
+use strict;
+use File::Find;
+
+use Failint::Checks::Log;
+use Failint::Checks::Vars;
+use Failint::Checks::Shell;
+
+our @commands = (
+    'adduser',
+    'deluser',
+    'addgroup',
+    'delgroup',
+    'usermod',
+    'groupmod',
+    'groupadd',
+    'groupdel',
+    'getent',
+    'install-keymap'
+
+);
+sub check_script {
+    my $fname = $File::Find::name;
+    next if not (-f $fname);
+    next if not (-x $fname);
+
+    my $fh;
+    open($fh, "<", $fname) or die "unable to open $fname: $!";
+
+    my $l = 0;
+    while (my $line = <$fh>) {
+        $l++;
+        chomp $line;
+        for my $cmd (@commands) {
+            my $re = qr"(?:\Q$cmd\E)";
+
+            if ($line =~ /$re/) {
+                if ($line !~ $ROOTCMD) {
+                    warning($fname, $l, "command ($cmd) called without \$ROOTCMD");
+                }
+            }
+        }
+    }
+}
+
+find(\&check_script, $scripts_dir);
