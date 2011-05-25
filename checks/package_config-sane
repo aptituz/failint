@@ -47,9 +47,13 @@ sub check_package_config {
     my $fh;
     open($fh, "<", $fname) or die "unable to open $fname: $!";
     my $packages_line_found=0;
+    my $package_found=0;
     my $l = 0;
     while(<$fh>) {
         $l++;
+        next if /^$/;
+        next if /^#/;
+
         if (/^PACKAGES ([^\s]+)(?:\s.*|$)/) {
             $packages_line_found=1;
             if (not defined $commands->{$1}) {
@@ -59,10 +63,18 @@ sub check_package_config {
                     error($fname, $l, "Invalid command '$1' in PACKAGES entry");
                 }
             }
+        } else {
+            if (/\w+/) {
+                $package_found=1;
+            }
         }
+
     }
     if ($packages_line_found eq 0) {
         error($fname, "", "no PACKAGES line found in package_config");
+    }
+    if ($package_found eq 0) {
+        warning($fname, "", "no package defined in package_config");
     }
 }
 
