@@ -39,6 +39,8 @@ sub check_script {
             if ($line =~ /$re/) {
                 if ($line !~ $ROOTCMD) {
                     warning($fname, $l, "command ($cmd) called without \$ROOTCMD");
+                } elsif ($line =~ /\$target/) {
+                    warning($fname, $l, "\$ROOTCMD cmdline contains \$target");
                 }
             }
         }
