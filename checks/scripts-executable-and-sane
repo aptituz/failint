@@ -16,6 +16,12 @@ sub check_script {
     next if not (-f $fname);
     debug("Testing $fname");
 
+    my $fname_short = basename($fname);
+    if ($fname_short !~ /^[S0-9]/) {
+        warning($fname, "", "script does not start with a digit");
+    } elsif ($fname_short =~ /^S/) {
+        warning($fname, "", "script starts with a 'S'")
+    }
     check_script_is_executable('script', $fname);
 
     $interpreter = get_interpreter($fname);
