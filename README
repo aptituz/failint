@@ -1,0 +1,54 @@
+failint
+-------
+This is a tool to check a fai configuration space for common mistakes.
+Its inspired by
+http://gitorious.org/fai-cd-configs/fai-cd-configs/blobs/master/files/home/fai/failint.sh/SERVERFAI
+but is written in perl and aims at a more flexible structure
+(e.g. checks are implemented as shell scripts and can therefore be in any
+language).
+
+Usage:
+------
+# ./failint
+Will check configuration files in /srv/fai/config
+
+# ./failint /path/to/config
+Will check configuration files in /path/to/config
+
+Interpreting output
+-------------------
+Similar to Debians lintian the scripts categorizes problems in the configuration
+space in errors (E), warnings (W) and infos (I).
+Each line is similar to the following:
+
+<E|W|I>: <file>:<lineno> <message>
+
+Errors:
+~~~~~~~
+A check is meant to spit an error if the check can say with a very
+high certainty that the found issue will make the installation fail.
+An example for such a check is a check that checks if the 'class' is missing.
+
+Warnings:
+~~~~~~~~~
+A check is meant to spit a warning if the can say with some certainty that
+the issue in question COULD be a mistake and its hard to determine if it really
+is (without reading the admins minds).
+An example for such a check is a check that tests for the executable flag
+on scripts. It could be an error, because the script will not be executed,
+but it could also be intentional, because the admin disabled it, by removing
+the +x flag.
+
+Infos:
+~~~~~~
+Infos are similar to warnings, but they are for cases where the check could
+very likely detect false positives. Therefore these messages are suppressed
+by default. Use the '-i' switch to show them.
+
+Implementing Checks
+-------------------
+Checks are shell scripts in the checks directory. Each executable script
+is executed and its output is beeing checked for certain patterns. See
+Failint/Checks/Log.pm for details how the output has to look like.
+This module can be used when implementing checks in perl.
+See the already implemented modules for examples.
