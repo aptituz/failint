@@ -24,6 +24,7 @@ sub get_interpreter {
     } else {
         my $interpreter = $1;
         $interpreter =~ s/^\s+|\s+$//g;
+        $interpreter =~ s/\s.*$//;
         return $interpreter;
     }
 }
@@ -59,10 +60,22 @@ sub check_script_for_syntax_errors {
         if (-x $interpreter) {
             system("$interpreter -c $fname 1>$tmpfile 2>&1");
             my $rc = $? >> 8;
-            my $stderr = read_file($tmpfile);
 
             unless ($rc == 0) {
                 warning($fname, "", "perl script has compilation errors");
+                my $stderr = read_file($tmpfile);
+                verbose("errors in $fname:");
+                verbose($stderr);
+            }
+        }
+    } elsif ($interpreter =~ /cfagent/) {
+        if (-x $interpreter) {
+            system("$interpreter -f $fname -p 1>$tmpfile 2>&1");
+            my $rc = $? >> 8;
+            my $stderr = read_file($tmpfile);
+            
+            unless ($rc == 0) {
+                warning($fname, "", "cfengine script has syntax errors");
                 my $stderr = read_file($tmpfile);
                 verbose("errors in $fname:");
                 verbose($stderr);
