@@ -1,0 +1,69 @@
+#!/usr/bin/perl
+
+use Data::Dumper;
+use File::Basename qw(dirname basename);
+use File::Find;
+
+
+use Failint::Checks::Log;
+use Failint::Checks::Vars;
+use Failint::Checks::Helpers;
+
+debug("FAI DIR: $fai_dir\n");
+
+our $commands = {
+	'aptitude' => 1,
+	'aptitude-r' => 1,
+	'cupt' => 1,
+	'cupt-r' => 1,
+	'dselect-upgrade' => 1,
+	'hold' => 1,
+	'install' => 1,
+	'remove' => 1,
+	'rpmr' => 1,
+	'smarti' => 1,
+	'smartr' => 1,
+	'taskinst' => 1,
+	'taskrm' => 1,
+	'unpack' => 1,
+	'urpme' => 1,
+	'urpmi' => 1,
+	'y2i' => 1,
+	'y2r' => 1,
+	'yast' => 1,
+	'yumgroup' => 1,
+	'yumi' => 1,
+	'yumr' => 1,
+	'zypper' => 1,
+	'zypper-rm' => 1,
+
+};
+
+sub check_package_config {
+    my $fname = $File::Find::name;
+    next if not (-f $fname);
+    debug("Testing $fname");
+
+    my $fh;
+    open($fh, "<", $fname) or die "unable to open $fname: $!";
+    my $packages_line_found=0;
+    my $l = 0;
+    while(<$fh>) {
+        $l++;
+        if (/^PACKAGES ([^\s]+)(?:\s.*|$)/) {
+            $packages_line_found=1;
+            if (not defined $commands->{$1}) {
+                if ($1 eq "apt-get") {
+                    error($fname, $l, "use of apt-get instead of install in PACKAGES entry");
+                } else {
+                    error($fname, $l, "Invalid command '$1' in PACKAGES entry");
+                }
+            }
+        }
+    }
+    if ($packages_line_found eq 0) {
+        error($fname, "", "no PACKAGES line found in package_config");
+    }
+}
+
+find(  \&check_package_config, $package_config_dir);
