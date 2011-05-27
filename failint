@@ -59,6 +59,7 @@ sub run_checks {
             } else {
                 # Ignore other output
                 next if not $verbose;
+                next if $line =~ /^$/;
                 print "# " . $line . "\n";
             }
         }
