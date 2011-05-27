@@ -15,7 +15,7 @@ debug("FAI DIR: $fai_dir\n");
 
 sub check_target_file {
     my ($fname, $lineno, $target, $no_fail, $recursive, $perms)  = @_;
-    
+   
     # Detect class of file
     my $class = $fname;
     my $fname_short = basename($fname);
@@ -36,12 +36,10 @@ sub check_target_file {
             info($fname, $lineno,
                 "non-existing source path, expected $expected_path");
         }
-    } elsif (not -f $expected_path . "/$class") {
+    } elsif (not -f $expected_path . "/$class" and not $recursive) {
         if (not $no_fail) {
-            warning($fname, $lineno, "fcopy: $expected_path does not contain a file for this class $class");
-        } else {
             info($fname, $lineno, "fcopy: $expected_path does not contain a file for this class $class");
-        }
+        } 
     }
 
     if ($target =~ /[\$]/) {
@@ -72,7 +70,7 @@ sub check_script {
             if (/$FCOPY_CMD/) {
                 debug("fcopy command found in $fname: $1");
 
-                
+               
                 my $fcopy_args = $1;
                 my $no_fail = 0;
                 # if command line contains || a fcopy failure is probably
@@ -87,7 +85,7 @@ sub check_script {
                     local @ARGV = split;
                     getopts('BDiMm:rUv', \%opts);
                     my @fcopy_files = @ARGV;
-    
+   
                     my $perms;
                     if ($opts{M}) {
                         $perms = "root,root,0644"
