@@ -12,12 +12,17 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(Configure error warning info debug);
 
 our $options = {
-    debug => 0
+    debug_lvl => 0,
+    info => 0
 };
 
 sub Configure {
-    my ($key, $value) = @_;
-    $options->{$key} = $value;
+    my (%keys) = @_;
+    while(my ($key, $value) = each %keys) {
+        die "invalid configuration key ($key) specified"
+            unless (defined $options->{$key});
+        $options->{$key} = $value;
+    }
 }
 
 sub print_message {
@@ -27,8 +32,10 @@ sub print_message {
 }
 
 sub debug {
-    my $message = shift;
-    if ($options->{debug}) {
+    my ($message, $message_lvl) = @_;
+    $message_lvl = 1 unless defined($message_lvl);
+
+    if ($message_lvl <= $options->{debug_lvl}) {
         print STDERR "DEBUG: " . $message . "\n";
     }
 }

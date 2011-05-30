@@ -11,6 +11,9 @@ use Getopt::Long;
 use File::Basename qw(basename);
 
 use Failint::Log;
+use Failint::Parser;
+
+Getopt::Long::Configure ("bundling");
 
 my $debug = 0;
 my $info = 0;
@@ -20,13 +23,12 @@ my $default_checkdir = "/usr/share/failint/checks";
 my $checkdir = (-d $default_checkdir) ? $default_checkdir : "checks/";
 
 GetOptions (
-    "debug" => \$debug,
+    "debug|d+" => \$debug,
     "info" => \$info,
     "verbose|v" => \$verbose
 );
 
-Failint::Log::Configure(debug => $debug);
-Failint::Log::Configure(info => $info);
+Failint::Log::Configure(debug_lvl => $debug, info => $info);
 my $config_path = shift @ARGV || "/srv/fai/config";
 
 sub run_checks {
@@ -34,33 +36,33 @@ sub run_checks {
 
     for my $check (sort(glob($checkdir . "*"))) {
         next if (not -x $check);
-        debug("Running $check\n");
+        debug("Running $check", 1);
         open(my $check_fh, "-|", $check, $config_path) or
             die "unable to fork subprocess: $!";
 
+        my $n=0;
         while (my $line = <$check_fh>) {
+            $n++;
             chomp $line;
-            debug("Output: " . $line);
-            if ($line =~ /^W\|(.*)\|(.*)\|(.*)/) {
-               my (undef, $file, $lineno, $text) = split(/\|/, $line);
-               warning($file, $lineno, $text);
-               $warnings++;
-            } elsif ($line =~ /^E\|(.*)\|(.*)\|(.*)/) {
-                my (undef, $file, $lineno, $text) = split(/\|/, $line);
-                error($file, $lineno, $text);
+            my ($tag, $file, $lineno, $message, $level) =
+                Failint::Parser::parse_line($line);
+
+            debug("<$check>|:$n $line", 3); 
+            if (defined($tag) and $tag eq "E") {
+                error($file, $lineno, $message);
                 $errors++;
-            } elsif ($line =~ /^I\|(.*)\|(.*)\|(.*)/) {
-                my (undef, $file, $lineno, $text) = split(/\|/, $line);
-                info($file, $lineno, $text);
+            } elsif (defined($tag) and $tag eq "W") {
+                warning($file, $lineno, $message);
+                $warnings++;
+            } elsif (defined($tag) and $tag eq "I") {
+                info($file, $lineno, $message);
                 $infos++;
-            } elsif ($line =~ /^D\|(.*)/) {
-                my (undef, $message) =  split(/\|/, $line);
-                debug($message);
+            } elsif (defined($tag) and $tag eq "D") {
+                debug($message, $level);
             } else {
-                # Ignore other output
                 next if not $verbose;
-                next if $line =~ /^$/;
-                print "# " . $line . "\n";
+                next if $message =~ /^$/;
+                print "# " . $message . "\n";
             }
         }
     }
